@@ -14,11 +14,17 @@
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-
+/*大框架布局*/
 Route::get('/','StaticPagesController@home')->name('home');
 Route::get('/help','StaticPagesController@help')->name('help');
 Route::get('/about','StaticPagesController@about')->name('about');
 
+/*注册及个人信息*/
 Route::get('/signup','UsersController@create')->name('signup');
 //资源路由
 Route::resource('users','UsersController');
+
+/*登录及退出*/
+Route::get('login','SessionsController@create')->name('login');
+Route::post('login','SessionsController@store')->name('login');
+Route::delete('logout','SessionsController@destroy')->name('logout');
