@@ -7,18 +7,20 @@ use Auth;
 
 class SessionsController extends Controller
 {
+    //登录页面显示
     public function create()
     {
         return view('sessions.create');
     }
 
+    //登录功能
     public function store(Request $request)
     {
         $credentials = $this->validate($request,[
             'email' => 'required|email|max:255',
             'password' => 'required',
         ]);
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials,$request->has('remember'))) {
             session()->flash('success','欢迎回来!');
             return redirect()->route('users.show',[Auth::user()]);
         } else {
@@ -28,6 +30,7 @@ class SessionsController extends Controller
         }
     }
 
+    //退出功能
     public function destroy()
     {
         Auth::logout();
