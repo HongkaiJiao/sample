@@ -29,9 +29,15 @@ class SessionsController extends Controller
             'password' => 'required',
         ]);
         if (Auth::attempt($credentials,$request->has('remember'))) {
-            session()->flash('success','欢迎回来!');
-            //intended方法：重定向至上一次请求尝试访问的页面，并接受一个默认跳转地址为参数
-            return redirect()->intended(route('users.show',[Auth::user()]));
+            if (Auth::user()->activated) {
+                session()->flash('success','欢迎回来!');
+                //intended方法：重定向至上一次请求尝试访问的页面，并接受一个默认跳转地址为参数
+                return redirect()->intended(route('users.show',[Auth::user()]));
+            } else {
+                Auth::logout();
+                session()->flash('warning','您的账号未激活，请检查邮箱中的注册邮件进行激活。');
+                return redirect('/');
+            }
         } else {
             session()->flash('danger','很抱歉,您的邮箱和密码不匹配!');
             //使用withInput将已填数据带回，同时可剔除不希望带回显示的数据

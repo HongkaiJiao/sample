@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Auth;
+use Mail;
 
 class UsersController extends Controller
 {
@@ -12,7 +13,7 @@ class UsersController extends Controller
     public function __construct()
     {
         $this->middleware('auth',[
-            'except' => ['create','show','store','index']
+            'except' => ['create','show','store','index','confirmEmail']
         ]);
         //只允许未登录用户访问注册页面
         $this->middleware('guest',[
@@ -50,9 +51,15 @@ class UsersController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
-        Auth::login($user);//注册成功后自动登录
-        session()->flash('success','欢迎，你将在这里开启一段新的旅程，enjoy it~~');
-        return redirect()->route('users.show',[$user->id]);
+        /*该块内容移至激活功能中实现登录及重定向
+         * Auth::login($user);//注册成功后自动登录
+         * session()->flash('success','欢迎，你将在这里开启一段新的旅程，enjoy it~~');
+         * return redirect()->route('users.show',[$user->id]);
+         */
+        //发送激活邮件并重定向至首页
+        $this->sendEmailConfirmationTo($user);
+        session()->flash('success','验证邮件已发送至您的注册邮箱，请注意查收。');
+        return redirect('/');
     }
 
     //显示编辑页面
@@ -102,5 +109,38 @@ class UsersController extends Controller
         $user->delete();
         session()->flash('success','成功删除用户!');
         return back();
+    }
+
+    //发送邮件至指定用户
+    protected function sendEmailConfirmationTo($user)
+    {
+        $view = 'emails.confirm';
+        $data = compact('user');
+        $from = 'basketballjhk@163.com';
+        $name = 'kevinjiao';
+        $to = $user->email;
+        $subject = "感谢注册 Sample 应用！请确认你的邮箱。";
+        /*使用Mail接口的send方法来实现邮件发送，该方法接收三个参数：
+         * ①包含邮件消息的视图名称，
+         * ②要传递给该视图的数据数组,
+         * ③接收邮件消息实例的闭包回调,在该回调中自定义邮件消息的发送者、接收者、邮件主题等信息*/
+        Mail::send($view,$data,function ($message) use ($from,$name,$to,$subject) {
+            $message->from($from,$name)->to($to)->subject($subject);
+        });
+    }
+
+    //邮件激活功能
+    public function confirmEmail($token)
+    {
+        //firstOrFail方法:取出第一个用户，在查询不到指定用户时将返回一个 404 响应
+        $user = User::where('activation_token',$token)->firstOrFail();
+        //设置用户激活状态等信息
+        $user->activated = true;
+        $user->activation_token = null;
+        $user->save();
+
+        Auth::login($user);//登录
+        session()->flash('success','激活成功！你将在这里开启一段新的旅程，enjoy it~~');
+        return redirect()->route('users.show',[$user->id]);
     }
 }
