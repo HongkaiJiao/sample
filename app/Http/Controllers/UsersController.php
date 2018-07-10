@@ -123,9 +123,12 @@ class UsersController extends Controller
         /*使用Mail接口的send方法来实现邮件发送，该方法接收三个参数：
          * ①包含邮件消息的视图名称，
          * ②要传递给该视图的数据数组,
-         * ③接收邮件消息实例的闭包回调,在该回调中自定义邮件消息的发送者、接收者、邮件主题等信息*/
+         * ③接收邮件消息实例的闭包回调,在该回调中自定义邮件消息的发送者、接收者、邮件主题等信息
         Mail::send($view,$data,function ($message) use ($from,$name,$to,$subject) {
             $message->from($from,$name)->to($to)->subject($subject);
+        });*/
+        Mail::send($view, $data, function ($message) use ($to, $subject) {
+            $message->to($to)->subject($subject);
         });
     }
 

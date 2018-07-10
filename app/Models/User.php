@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPassword;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -46,5 +47,11 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $user->activation_token = str_random(30);//在用户创建(注册)之前生成激活令牌
         });
+    }
+
+    //修改用于向用户发送密码重置链接的通知类--自定义用于重置的邮件
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
     }
 }
