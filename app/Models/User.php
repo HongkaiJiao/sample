@@ -54,4 +54,18 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPassword($token));
     }
+
+    //定义模型关联函数，指明一个用户拥有多条微博
+    public function statuses()
+    {
+        // hasMany('App\要引入的实体类名','另一表中的外键','本表中的主键');别表的外键与本表的主键不同要自己添加第二第三个参数
+        // Status::class 返回类Status的完全限定名称
+        return $this->hasMany(Status::class);
+    }
+
+    //从数据库中取出当前用户发布过的所有微博
+    public function feed()
+    {
+        return $this->statuses()->orderBy('created_at','desc');
+    }
 }

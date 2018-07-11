@@ -30,12 +30,17 @@ class UsersController extends Controller
     //显示个人信息页面
     public function show(User $user)
     {
+        //模型关联后可使用$user->statuses()方式获取一个用户的所有微博
+        $statuses = $user->statuses()
+                         ->orderBy('created_at','desc')
+                         ->paginate(30);
+
         /*给视图传参的多种方式
          *① view('users.show',compact('user'))
          *② view('users.show',['user'=>$user])
          *③ view('users.show')->with('user',$user)
         */
-        return view('users.show',compact('user'));
+        return view('users.show',compact('user','statuses'));
     }
 
     //注册功能
@@ -65,7 +70,8 @@ class UsersController extends Controller
     //显示编辑页面
     public function edit(User $user)
     {
-        //验证用户授权策略--两个参数：授权策略的名称、进行授权验证的数据；无权限运行时会抛出HTTPException
+        //authorize方法用来验证用户授权策略(类似于can方法)--两个参数：授权策略的名称、进行授权验证的数据；无权限运行时会抛出HTTPException
+        //authorize方法为控制器辅助函数
         $this->authorize('update',$user);
         return view('users.edit',compact('user'));
     }
