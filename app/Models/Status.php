@@ -11,6 +11,6 @@ class Status extends Model
     //定义模型关联函数，指明一条微博属于一个用户
     public function user()
     {
-        return $this->belongsTo(User::class);
+    return $this->belongsTo(User::class);
     }
 }
